@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lista de Compras</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f4f5f7;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Top Bar */
+        header {
+            background-color: #2196F3;
+            color: white;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Navegação por Abas */
+        .tabs {
+            display: flex;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 8px;
+            border: none;
+            background: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+        }
+
+        .badge {
+            background-color: #e0e0e0;
+            color: #333;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 6px;
+        }
+
+        .tab-btn.active .badge {
+            background-color: #bbdefb;
+            color: #0d47a1;
+        }
+
+        /* Conteúdo Principal */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            margin-top: 40px;
+            font-size: 0.95rem;
+        }
+
+        /* Lista de Produtos */
+        .item-list {
+            list-style: none;
+        }
+
+        .item-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: transform 0.1s ease;
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #2196F3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .checkbox.checked {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #222;
+        }
+
+        .completed .item-name {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .item-qty {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #f44336;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .delete-btn:active {
+            background-color: #ffebee;
+        }
+
+        /* Botão Flutuante (+) */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            font-size: 28px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal para Adicionar */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #2196F3;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-primary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        /* Botão para Limpar Comprados */
+        .clear-all-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px dashed #ef9a9a;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Lista de Compras</h1>
+    </header>
+
+    <!-- Abas -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('to-buy')">
+            Para Comprar <span class="badge" id="count-to-buy">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('bought')">
+            Já Comprados <span class="badge" id="count-bought">0</span>
+        </button>
+    </div>
+
+    <!-- Conteúdo das Listas -->
+    <main>
+        <!-- Aba: Para Comprar -->
+        <div id="tab-to-buy" class="tab-content active">
+            <div id="empty-to-buy" class="empty-state">Sua lista está vazia!<br>Clique no botão abaixo para adicionar.</div>
+            <ul id="list-to-buy" class="item-list"></ul>
+        </div>
+
+        <!-- Aba: Já Comprados -->
+        <div id="tab-bought" class="tab-content">
+            <button id="clear-bought-btn" class="clear-all-btn" style="display: none;" onclick="clearBoughtItems()">Limpar Itens Comprados</button>
+            <div id="empty-bought" class="empty-state">Nenhum item comprado ainda.</div>
+            <ul id="list-bought" class="item-list"></ul>
+        </div>
+    </main>
+
+    <!-- Botão Flutuante Adicionar -->
+    <button class="fab" onclick="openModal()">+</button>
+
+    <!-- Modal Form -->
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+            <h2>Adicionar Produto</h2>
+            <form id="add-form" onsubmit="handleAddItem(event)">
+                <div class="form-group">
+                    <label for="item-name">Nome do Produto</label>
+                    <input type="text" id="item-name" placeholder="Ex: Leite, Pão, Arroz..." required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="item-qty">Quantidade / Obs.</label>
+                    <input type="text" id="item-qty" placeholder="Ex: 2 un, 1 kg, marca X...">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Carrega os dados salvos no armazenamento local do navegador
+        let items = JSON.parse(localStorage.getItem('shopping_list_items')) || [];
+
+        function saveItems() {
+            localStorage.setItem('shopping_list_items', JSON.stringify(items));
+            render();
+        }
+
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'to-buy') {
+                tabs[0].classList.add('active');
+                document.getElementById('tab-to-buy').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('tab-bought').classList.add('active');
+            }
+        }
+
+        function openModal() {
+            document.getElementById('modal-overlay').classList.add('open');
+            document.getElementById('item-name').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('open');
+            document.getElementById('add-form').reset();
+        }
+
+        function closeModalOnOverlay(e) {
+            if (e.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        }
+
+        function handleAddItem(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('item-name');
+            const qtyInput = document.getElementById('item-qty');
+
+            const newItem = {
+                id: Date.now(),
+                name: nameInput.value.trim(),
+                quantity: qtyInput.value.trim() || '1 un',
+                bought: false
+            };
+
+            items.push(newItem);
+            saveItems();
+            closeModal();
+        }
+
+        function toggleItemStatus(id) {
+            items = items.map(item => {
+                if (item.id === id) {
+                    return { ...item, bought: !item.bought };
+                }
+                return item;
+            });
+            saveItems();
+        }
+
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            saveItems();
+        }
+
+        function clearBoughtItems() {
+            if (confirm('Deseja realmente remover todos os itens comprados?')) {
+                items = items.filter(item => !item.bought);
+                saveItems();
+            }
+        }
+
+        function render() {
+            const listToBuy = document.getElementById('list-to-buy');
+            const listBought = document.getElementById('list-bought');
+            const emptyToBuy = document.getElementById('empty-to-buy');
+            const emptyBought = document.getElementById('empty-bought');
+            const countToBuy = document.getElementById('count-to-buy');
+            const countBought = document.getElementById('count-bought');
+            const clearBtn = document.getElementById('clear-bought-btn');
+
+            listToBuy.innerHTML = '';
+            listBought.innerHTML = '';
+
+            const toBuyItems = items.filter(item => !item.bought);
+            const boughtItems = items.filter(item => item.bought);
+
+            countToBuy.textContent = toBuyItems.length;
+            countBought.textContent = boughtItems.length;
+
+            emptyToBuy.style.display = toBuyItems.length === 0 ? 'block' : 'none';
+            emptyBought.style.display = boughtItems.length === 0 ? 'block' : 'none';
+            clearBtn.style.display = boughtItems.length > 0 ? 'block' : 'none';
+
+            toBuyItems.forEach(item => {
+                listToBuy.appendChild(createItemElement(item));
+            });
+
+            boughtItems.forEach(item => {
+                listBought.appendChild(createItemElement(item));
+            });
+        }
+
+        function createItemElement(item) {
+            const li = document.createElement('li');
+            li.className = `item-card ${item.bought ? 'completed' : ''}`;
+
+            li.innerHTML = `
+                <div class="item-info" onclick="toggleItemStatus(${item.id})">
+                    <div class="checkbox ${item.bought ? 'checked' : ''}">
+                        ${item.bought ? '✓' : ''}
+                    </div>
+                    <div class="item-details">
+                        <span class="item-name">${escapeHtml(item.name)}</span>
+                        <span class="item-qty">${escapeHtml(item.quantity)}</span>
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="deleteItem(${item.id})" title="Excluir">🗑</button>
+            `;
+
+            return li;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Renderiza a lista na inicialização
+        render();
+    </script>
+</body>
+</html>
