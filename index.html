@@ -196,7 +196,7 @@
             li.className = `item-card ${item.bought ? 'completed' : ''}`;
             li.dataset.itemId = item.id;
             li.innerHTML = `
-                <button class="drag-handle" type="button" aria-label="Arrastar ${escapeHtml(item.name)} para organizar" title="Arraste para organizar">☰</button>
+                ${item.bought ? '' : `<button class="drag-handle" type="button" aria-label="Arrastar ${escapeHtml(item.name)} para organizar" title="Arraste para organizar">☰</button>`}
                 <div class="item-info" role="button" tabindex="0" aria-label="Marcar ${escapeHtml(item.name)} como ${item.bought ? 'não comprado' : 'comprado'}">
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
@@ -211,7 +211,9 @@
             `;
 
             const dragHandle = li.querySelector('.drag-handle');
-            dragHandle.addEventListener('pointerdown', event => startDragging(event, li, item));
+            if (dragHandle) {
+                dragHandle.addEventListener('pointerdown', event => startDragging(event, li, item));
+            }
             li.querySelector('.item-info').addEventListener('click', () => toggleItemStatus(item.id));
             li.querySelector('.item-info').addEventListener('keydown', event => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -225,11 +227,10 @@
         }
 
         function startDragging(event, card, item) {
-            if (event.button !== undefined && event.button !== 0) return;
+            if (item.bought || (event.button !== undefined && event.button !== 0)) return;
             event.preventDefault();
             dragState = {
                 id: item.id,
-                bought: item.bought,
                 card,
                 list: card.parentElement,
                 startX: event.clientX,
@@ -265,12 +266,11 @@
             if (!state.moved) return;
 
             const orderedIds = Array.from(state.list.children).map(card => Number(card.dataset.itemId));
-            let orderedItems = items.filter(item => item.bought === state.bought);
-            const itemById = new Map(orderedItems.map(item => [item.id, item]));
-            orderedItems = orderedIds.map(id => itemById.get(id)).filter(Boolean);
-
+            const toBuyItems = items.filter(item => !item.bought);
+            const itemById = new Map(toBuyItems.map(item => [item.id, item]));
+            const orderedItems = orderedIds.map(id => itemById.get(id)).filter(Boolean);
             let index = 0;
-            items = items.map(item => item.bought === state.bought ? orderedItems[index++] : item);
+            items = items.map(item => item.bought ? item : orderedItems[index++]);
             saveItems();
         }
 
