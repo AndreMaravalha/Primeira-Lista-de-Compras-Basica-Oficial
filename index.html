@@ -18,6 +18,7 @@
             --background: #f3f6fa;
             --border: #e4e9f0;
             --danger: #c62828;
+            --warning: #9a5b00;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -26,17 +27,18 @@
         .header-eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; opacity: .8; font-weight: 700; margin-bottom: 5px; }
         header h1 { font-size: 1.45rem; line-height: 1.2; font-weight: 750; }
         .header-subtitle { margin-top: 6px; font-size: .88rem; opacity: .9; }
-        .tabs { display: flex; background: var(--surface); padding: 0 10px; box-shadow: 0 2px 8px rgba(20, 42, 66, .05); z-index: 10; }
-        .tab-btn { flex: 1; padding: 15px 6px 12px; border: 0; background: none; font-size: .88rem; font-weight: 650; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color .18s ease, border-color .18s ease; }
+        .tabs { display: flex; background: var(--surface); padding: 0 6px; box-shadow: 0 2px 8px rgba(20, 42, 66, .05); z-index: 10; }
+        .tab-btn { flex: 1; padding: 14px 3px 11px; border: 0; background: none; font-size: .78rem; font-weight: 650; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color .18s ease, border-color .18s ease; white-space: nowrap; }
         .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
-        .badge { display: inline-flex; min-width: 22px; justify-content: center; background: #edf0f4; color: #475467; font-size: .72rem; padding: 3px 7px; border-radius: 20px; margin-left: 4px; }
+        .badge { display: inline-flex; min-width: 20px; justify-content: center; background: #edf0f4; color: #475467; font-size: .68rem; padding: 3px 6px; border-radius: 20px; margin-left: 2px; }
         .tab-btn.active .badge { background: var(--blue-soft); color: var(--blue-dark); }
         main { flex: 1; overflow-y: auto; padding: 18px 15px 96px; scroll-behavior: smooth; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .list-heading { display: flex; justify-content: space-between; align-items: center; margin: 2px 2px 12px; }
+        .list-heading { display: flex; justify-content: space-between; align-items: center; margin: 2px 2px 12px; gap: 8px; }
         .list-heading h2 { font-size: 1rem; font-weight: 700; }
-        .list-hint { color: var(--muted); font-size: .75rem; }
+        .list-hint { color: var(--muted); font-size: .72rem; white-space: nowrap; }
+        .section-description { color: var(--muted); font-size: .82rem; line-height: 1.45; margin: -4px 2px 13px; }
         .empty-state { text-align: center; color: var(--muted); background: rgba(255,255,255,.72); border: 1px dashed #cbd5e1; border-radius: 14px; padding: 26px 18px; margin-top: 12px; font-size: .9rem; line-height: 1.5; }
         .empty-icon { display: block; font-size: 1.7rem; margin-bottom: 8px; }
         .item-list { list-style: none; }
@@ -53,6 +55,7 @@
         .completed .item-name { text-decoration: line-through; color: #8a94a3; }
         .item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; }
         .item-qty { display: inline-flex; align-items: center; border-radius: 20px; background: #eef6fc; color: #315f83; font-size: .73rem; font-weight: 650; padding: 3px 8px; }
+        .item-gap { display: inline-flex; align-items: center; border-radius: 20px; background: #fff2d8; color: var(--warning); font-size: .73rem; font-weight: 700; padding: 3px 8px; }
         .item-notes { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
         .item-actions { display: flex; align-items: center; flex-shrink: 0; }
         .edit-btn, .delete-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0; font-size: 1.05rem; cursor: pointer; border-radius: 9px; }
@@ -72,12 +75,14 @@
         .form-group label { display: block; font-size: .82rem; color: #475467; font-weight: 650; margin-bottom: 7px; }
         .form-group input { width: 100%; padding: 12px 13px; border: 1px solid #d0d5dd; border-radius: 10px; background: #fff; font-size: 1rem; color: var(--text); outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
         .form-group input:focus { border-color: #4a9bd5; box-shadow: 0 0 0 3px rgba(37, 136, 206, .13); }
+        .form-help { display: block; color: var(--muted); font-size: .73rem; margin-top: 5px; line-height: 1.4; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .btn { padding: 11px 17px; border-radius: 10px; border: 0; font-size: .9rem; font-weight: 700; cursor: pointer; }
         .btn-secondary { background: #edf0f4; color: #344054; }
         .btn-primary { background: var(--blue); color: white; }
         .clear-all-btn { width: 100%; padding: 11px; background: #fff4f2; color: var(--danger); border: 1px solid #f3c9c4; border-radius: 10px; font-size: .86rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; }
         button:focus-visible, [role="button"]:focus-visible { outline: 3px solid rgba(37, 136, 206, .35); outline-offset: 2px; }
+        @media (max-width: 360px) { .tab-btn { font-size: .71rem; } .badge { min-width: 18px; padding: 2px 5px; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
     </style>
 </head>
@@ -87,24 +92,28 @@
         <h1>Lista de Compras</h1>
         <p class="header-subtitle">Tudo o que você precisa, em um só lugar.</p>
     </header>
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('to-buy')">Para Comprar <span class="badge" id="count-to-buy">0</span></button>
-        <button class="tab-btn" onclick="switchTab('bought')">Já Comprados <span class="badge" id="count-bought">0</span></button>
+    <div class="tabs" role="tablist" aria-label="Listas de produtos">
+        <button class="tab-btn active" id="tab-button-to-buy" role="tab" aria-selected="true" aria-controls="tab-to-buy" onclick="switchTab('to-buy')">Para Comprar <span class="badge" id="count-to-buy">0</span></button>
+        <button class="tab-btn" id="tab-button-bought" role="tab" aria-selected="false" aria-controls="tab-bought" onclick="switchTab('bought')">Já Comprados <span class="badge" id="count-bought">0</span></button>
+        <button class="tab-btn" id="tab-button-incomplete" role="tab" aria-selected="false" aria-controls="tab-incomplete" onclick="switchTab('incomplete')">Incompletos <span class="badge" id="count-incomplete">0</span></button>
     </div>
     <main>
-        <div id="tab-to-buy" class="tab-content active">
-            <div class="list-heading">
-                <h2>Lista de produtos</h2>
-                <span class="list-hint">☰ Arraste para ordenar</span>
-            </div>
+        <div id="tab-to-buy" class="tab-content active" role="tabpanel" aria-labelledby="tab-button-to-buy">
+            <div class="list-heading"><h2>Lista de produtos</h2><span class="list-hint">☰ Arraste para ordenar</span></div>
             <div id="empty-to-buy" class="empty-state"><span class="empty-icon">🛒</span>Sua lista está vazia.<br>Toque no botão + para adicionar produtos.</div>
             <ul id="list-to-buy" class="item-list"></ul>
         </div>
-        <div id="tab-bought" class="tab-content">
+        <div id="tab-bought" class="tab-content" role="tabpanel" aria-labelledby="tab-button-bought">
             <button id="clear-bought-btn" class="clear-all-btn" style="display: none;" onclick="clearBoughtItems()">Limpar itens comprados</button>
             <div class="list-heading"><h2>Produtos comprados</h2></div>
             <div id="empty-bought" class="empty-state"><span class="empty-icon">✅</span>Nenhum item comprado ainda.</div>
             <ul id="list-bought" class="item-list"></ul>
+        </div>
+        <div id="tab-incomplete" class="tab-content" role="tabpanel" aria-labelledby="tab-button-incomplete">
+            <div class="list-heading"><h2>Estoque incompleto</h2></div>
+            <p class="section-description">Aqui aparecem os produtos que você tem em casa em quantidade menor do que deseja. Atualize o estoque pelo botão de edição.</p>
+            <div id="empty-incomplete" class="empty-state"><span class="empty-icon">✨</span>Seu estoque está completo.<br>Nenhum produto precisa ser reposto.</div>
+            <ul id="list-incomplete" class="item-list"></ul>
         </div>
     </main>
     <button class="fab" onclick="openModal()" aria-label="Adicionar produto">+</button>
@@ -117,8 +126,14 @@
                     <input type="text" id="item-name" placeholder="Ex.: Leite, pão, arroz..." required autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label for="item-desired-quantity">Quantidade desejada</label>
+                    <label for="item-desired-quantity">Quantidade desejada em casa</label>
                     <input type="number" id="item-desired-quantity" min="1" step="1" value="1" required inputmode="numeric">
+                    <small class="form-help">Seu estoque ideal total para este produto.</small>
+                </div>
+                <div class="form-group">
+                    <label for="item-current-quantity">Quantidade que já tenho em casa</label>
+                    <input type="number" id="item-current-quantity" min="0" step="1" value="0" required inputmode="numeric">
+                    <small class="form-help">A aba “Incompletos” calcula quanto falta para atingir a quantidade desejada.</small>
                 </div>
                 <div class="form-group">
                     <label for="item-qty">Observação (opcional)</label>
@@ -132,7 +147,15 @@
         </div>
     </div>
     <script>
-        let items = JSON.parse(localStorage.getItem('shopping_list_items')) || [];
+        const storedItems = JSON.parse(localStorage.getItem('shopping_list_items') || '[]');
+        let items = storedItems.map(item => {
+            const desiredQuantity = Math.max(1, Math.floor(Number(item.desiredQuantity) || 1));
+            const currentQuantity = item.currentQuantity === undefined
+                ? (item.bought ? desiredQuantity : 0)
+                : Math.max(0, Math.floor(Number(item.currentQuantity) || 0));
+            const notes = item.notes !== undefined ? item.notes : (item.quantity || '');
+            return { ...item, desiredQuantity, currentQuantity, notes, quantity: notes };
+        });
         let editingItemId = null;
         let dragState = null;
 
@@ -142,27 +165,28 @@
         }
 
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            if (tabName === 'to-buy') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('tab-to-buy').classList.add('active');
-            } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('tab-bought').classList.add('active');
-            }
+            const tabs = {
+                'to-buy': ['tab-button-to-buy', 'tab-to-buy'],
+                'bought': ['tab-button-bought', 'tab-bought'],
+                'incomplete': ['tab-button-incomplete', 'tab-incomplete']
+            };
+            Object.entries(tabs).forEach(([name, [buttonId, panelId]]) => {
+                const selected = name === tabName;
+                document.getElementById(buttonId).classList.toggle('active', selected);
+                document.getElementById(buttonId).setAttribute('aria-selected', String(selected));
+                document.getElementById(panelId).classList.toggle('active', selected);
+            });
         }
 
         function openModal(item = null) {
             const nameInput = document.getElementById('item-name');
-            const quantityInput = document.getElementById('item-desired-quantity');
-            const notesInput = document.getElementById('item-qty');
             editingItemId = item ? item.id : null;
             document.getElementById('modal-title').textContent = item ? 'Editar Produto' : 'Adicionar Produto';
             document.getElementById('submit-item-btn').textContent = item ? 'Salvar alterações' : 'Adicionar';
             nameInput.value = item ? item.name : '';
-            quantityInput.value = item ? (Number(item.desiredQuantity) || 1) : 1;
-            notesInput.value = item ? (item.notes !== undefined ? item.notes : (item.quantity || '')) : '';
+            document.getElementById('item-desired-quantity').value = item ? item.desiredQuantity : 1;
+            document.getElementById('item-current-quantity').value = item ? item.currentQuantity : 0;
+            document.getElementById('item-qty').value = item ? item.notes : '';
             document.getElementById('modal-overlay').classList.add('open');
             nameInput.focus();
         }
@@ -171,6 +195,7 @@
             document.getElementById('modal-overlay').classList.remove('open');
             document.getElementById('add-form').reset();
             document.getElementById('item-desired-quantity').value = 1;
+            document.getElementById('item-current-quantity').value = 0;
             document.getElementById('modal-title').textContent = 'Adicionar Produto';
             document.getElementById('submit-item-btn').textContent = 'Adicionar';
             editingItemId = null;
@@ -184,16 +209,17 @@
             event.preventDefault();
             const name = document.getElementById('item-name').value.trim();
             const desiredQuantity = Math.max(1, Math.floor(Number(document.getElementById('item-desired-quantity').value) || 1));
+            const currentQuantity = Math.max(0, Math.floor(Number(document.getElementById('item-current-quantity').value) || 0));
             const notes = document.getElementById('item-qty').value.trim();
             if (!name) return;
 
             if (editingItemId !== null) {
                 items = items.map(item => item.id === editingItemId
-                    ? { ...item, name, desiredQuantity, notes, quantity: notes }
+                    ? { ...item, name, desiredQuantity, currentQuantity, notes, quantity: notes }
                     : item
                 );
             } else {
-                items.push({ id: Date.now(), name, desiredQuantity, notes, quantity: notes, bought: false });
+                items.push({ id: Date.now(), name, desiredQuantity, currentQuantity, notes, quantity: notes, bought: false });
             }
             saveItems();
             closeModal();
@@ -217,34 +243,45 @@
         }
 
         function render() {
-            const listToBuy = document.getElementById('list-to-buy');
-            const listBought = document.getElementById('list-bought');
             const toBuyItems = items.filter(item => !item.bought);
             const boughtItems = items.filter(item => item.bought);
+            const incompleteItems = items.filter(item => item.currentQuantity < item.desiredQuantity);
+
             document.getElementById('count-to-buy').textContent = toBuyItems.length;
             document.getElementById('count-bought').textContent = boughtItems.length;
+            document.getElementById('count-incomplete').textContent = incompleteItems.length;
             document.getElementById('empty-to-buy').style.display = toBuyItems.length === 0 ? 'block' : 'none';
             document.getElementById('empty-bought').style.display = boughtItems.length === 0 ? 'block' : 'none';
+            document.getElementById('empty-incomplete').style.display = incompleteItems.length === 0 ? 'block' : 'none';
             document.getElementById('clear-bought-btn').style.display = boughtItems.length > 0 ? 'block' : 'none';
+
+            const listToBuy = document.getElementById('list-to-buy');
+            const listBought = document.getElementById('list-bought');
+            const listIncomplete = document.getElementById('list-incomplete');
             listToBuy.innerHTML = '';
             listBought.innerHTML = '';
-            toBuyItems.forEach(item => listToBuy.appendChild(createItemElement(item)));
-            boughtItems.forEach(item => listBought.appendChild(createItemElement(item)));
+            listIncomplete.innerHTML = '';
+            toBuyItems.forEach(item => listToBuy.appendChild(createItemElement(item, true, false)));
+            boughtItems.forEach(item => listBought.appendChild(createItemElement(item, false, false)));
+            incompleteItems.forEach(item => listIncomplete.appendChild(createItemElement(item, false, true)));
         }
 
-        function createItemElement(item) {
+        function createItemElement(item, canReorder, showShortage) {
             const li = document.createElement('li');
             li.className = `item-card ${item.bought ? 'completed' : ''}`;
             li.dataset.itemId = item.id;
-            const desiredQuantity = Math.max(1, Number(item.desiredQuantity) || 1);
-            const notes = item.notes !== undefined ? item.notes : (item.quantity || '');
+            const missingQuantity = Math.max(0, item.desiredQuantity - item.currentQuantity);
             li.innerHTML = `
-                ${item.bought ? '' : '<button class="drag-handle" type="button" aria-label="Arrastar para organizar" title="Arraste para organizar">☰</button>'}
+                ${canReorder ? '<button class="drag-handle" type="button" aria-label="Arrastar para organizar" title="Arraste para organizar">☰</button>' : ''}
                 <div class="item-info" role="button" tabindex="0" aria-label="Marcar ${escapeHtml(item.name)} como ${item.bought ? 'não comprado' : 'comprado'}">
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
                         <span class="item-name">${escapeHtml(item.name)}</span>
-                        <span class="item-meta"><span class="item-qty">Qtd.: ${desiredQuantity}</span>${notes ? `<span class="item-notes">${escapeHtml(notes)}</span>` : ''}</span>
+                        <span class="item-meta">
+                            <span class="item-qty">Tenho ${item.currentQuantity} / ${item.desiredQuantity}</span>
+                            ${showShortage ? `<span class="item-gap">Faltam ${missingQuantity}</span>` : ''}
+                            ${item.notes ? `<span class="item-notes">${escapeHtml(item.notes)}</span>` : ''}
+                        </span>
                     </div>
                 </div>
                 <div class="item-actions">
@@ -268,9 +305,10 @@
         }
 
         function startDragging(event, card, item) {
-            if (item.bought || (event.button !== undefined && event.button !== 0)) return;
-            event.preventDefault();
-            dragState = { card, list: card.parentElement, startX: event.clientX, startY: event.clientY, moved: false };
+            if (!item.bought && (event.button === undefined || event.button === 0)) {
+                event.preventDefault();
+                dragState = { card, list: card.parentElement, startX: event.clientX, startY: event.clientY, moved: false };
+            }
         }
 
         document.addEventListener('pointermove', event => {
