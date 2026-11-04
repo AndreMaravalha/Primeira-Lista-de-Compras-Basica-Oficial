@@ -3,72 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1769aa">
     <title>Lista de Compras</title>
     <style>
+        :root {
+            color-scheme: light;
+            --blue: #1769aa;
+            --blue-dark: #0d4f87;
+            --blue-soft: #e8f3fc;
+            --green: #23845b;
+            --text: #1d2939;
+            --muted: #667085;
+            --surface: #ffffff;
+            --background: #f3f6fa;
+            --border: #e4e9f0;
+            --danger: #c62828;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #f4f5f7; color: #333; display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
-        header { background-color: #2196F3; color: white; padding: 16px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-        header h1 { font-size: 1.2rem; font-weight: 600; }
-        .tabs { display: flex; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 10; }
-        .tab-btn { flex: 1; padding: 14px 8px; border: none; background: none; font-size: 0.95rem; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; }
-        .tab-btn.active { color: #2196F3; border-bottom-color: #2196F3; }
-        .badge { background-color: #e0e0e0; color: #333; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 6px; }
-        .tab-btn.active .badge { background-color: #bbdefb; color: #0d47a1; }
-        main { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
+        body { background: var(--background); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; height: 100dvh; max-width: 520px; margin: 0 auto; position: relative; box-shadow: 0 0 32px rgba(27, 49, 74, .08); }
+        header { background: linear-gradient(135deg, var(--blue) 0%, #2588ce 100%); color: white; padding: 22px 18px 20px; text-align: left; box-shadow: 0 4px 14px rgba(23, 105, 170, .2); }
+        .header-eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; opacity: .8; font-weight: 700; margin-bottom: 5px; }
+        header h1 { font-size: 1.45rem; line-height: 1.2; font-weight: 750; }
+        .header-subtitle { margin-top: 6px; font-size: .88rem; opacity: .9; }
+        .tabs { display: flex; background: var(--surface); padding: 0 10px; box-shadow: 0 2px 8px rgba(20, 42, 66, .05); z-index: 10; }
+        .tab-btn { flex: 1; padding: 15px 6px 12px; border: 0; background: none; font-size: .88rem; font-weight: 650; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: color .18s ease, border-color .18s ease; }
+        .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+        .badge { display: inline-flex; min-width: 22px; justify-content: center; background: #edf0f4; color: #475467; font-size: .72rem; padding: 3px 7px; border-radius: 20px; margin-left: 4px; }
+        .tab-btn.active .badge { background: var(--blue-soft); color: var(--blue-dark); }
+        main { flex: 1; overflow-y: auto; padding: 18px 15px 96px; scroll-behavior: smooth; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .empty-state { text-align: center; color: #888; margin-top: 40px; font-size: 0.95rem; }
+        .list-heading { display: flex; justify-content: space-between; align-items: center; margin: 2px 2px 12px; }
+        .list-heading h2 { font-size: 1rem; font-weight: 700; }
+        .list-hint { color: var(--muted); font-size: .75rem; }
+        .empty-state { text-align: center; color: var(--muted); background: rgba(255,255,255,.72); border: 1px dashed #cbd5e1; border-radius: 14px; padding: 26px 18px; margin-top: 12px; font-size: .9rem; line-height: 1.5; }
+        .empty-icon { display: block; font-size: 1.7rem; margin-bottom: 8px; }
         .item-list { list-style: none; }
-        .item-card { background-color: white; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: transform 0.18s ease, box-shadow 0.18s ease; }
-        .item-card.dragging { opacity: 0.55; box-shadow: 0 8px 18px rgba(0,0,0,0.22); transform: scale(1.01); }
-        .drag-handle { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(180deg, #eaf4ff 0%, #dfeeff 100%); border: 1px solid #cfe3ff; color: #3c7fe3; font-size: 1rem; font-weight: 700; cursor: grab; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; flex-shrink: 0; }
-        .drag-handle:active { cursor: grabbing; }
-        .item-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
-        .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #2196F3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; font-size: 0.8rem; transition: all 0.2s; }
-        .checkbox.checked { background-color: #4CAF50; border-color: #4CAF50; color: white; }
+        .item-card { background: var(--surface); border: 1px solid rgba(228,233,240,.9); border-radius: 14px; padding: 12px 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 9px; box-shadow: 0 3px 10px rgba(31, 52, 73, .045); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+        .item-card:active { border-color: #b6d6ef; }
+        .item-card.dragging { opacity: .58; box-shadow: 0 10px 24px rgba(25, 55, 85, .2); transform: scale(1.015); }
+        .drag-handle { width: 30px; height: 34px; border-radius: 9px; background: var(--blue-soft); border: 1px solid #d5e8f8; color: #397bb3; font-size: 1rem; font-weight: 700; cursor: grab; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; flex-shrink: 0; }
+        .drag-handle:active { cursor: grabbing; background: #d7eafa; }
+        .item-info { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 0; cursor: pointer; padding: 2px 0; }
+        .checkbox { width: 23px; height: 23px; border-radius: 50%; border: 2px solid #9db8ce; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; font-size: .78rem; color: white; transition: background .18s ease, border-color .18s ease; }
+        .checkbox.checked { background: var(--green); border-color: var(--green); }
         .item-details { display: flex; flex-direction: column; min-width: 0; }
-        .item-name { font-size: 1rem; font-weight: 500; color: #222; overflow-wrap: anywhere; }
-        .completed .item-name { text-decoration: line-through; color: #888; }
-        .item-qty { font-size: 0.8rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
-        .item-notes { font-size: 0.78rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
+        .item-name { font-size: .97rem; font-weight: 650; color: var(--text); overflow-wrap: anywhere; }
+        .completed .item-name { text-decoration: line-through; color: #8a94a3; }
+        .item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; }
+        .item-qty { display: inline-flex; align-items: center; border-radius: 20px; background: #eef6fc; color: #315f83; font-size: .73rem; font-weight: 650; padding: 3px 8px; }
+        .item-notes { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
         .item-actions { display: flex; align-items: center; flex-shrink: 0; }
-        .edit-btn, .delete-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
-        .edit-btn { color: #1976d2; }
-        .delete-btn { color: #f44336; }
-        .edit-btn:active { background-color: #e3f2fd; }
-        .delete-btn:active { background-color: #ffebee; }
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: #2196F3; color: white; border: none; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .fab:active { transform: scale(0.95); }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: flex-end; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.25s ease; }
+        .edit-btn, .delete-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0; font-size: 1.05rem; cursor: pointer; border-radius: 9px; }
+        .edit-btn { color: var(--blue); }
+        .delete-btn { color: var(--danger); }
+        .edit-btn:hover, .edit-btn:focus-visible { background: var(--blue-soft); }
+        .delete-btn:hover, .delete-btn:focus-visible { background: #fff0ef; }
+        .fab { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); right: max(20px, calc((100vw - 520px) / 2 + 20px)); width: 58px; height: 58px; border-radius: 19px; background: linear-gradient(145deg, #2588ce, var(--blue)); color: white; border: 0; font-size: 30px; box-shadow: 0 7px 18px rgba(23, 105, 170, .34); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; transition: transform .18s ease, box-shadow .18s ease; }
+        .fab:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(23, 105, 170, .38); }
+        .fab:active { transform: scale(.96); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(16, 29, 43, .48); display: flex; justify-content: center; align-items: flex-end; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity .22s ease, visibility .22s ease; }
         .modal-overlay.open { opacity: 1; visibility: visible; }
-        .modal { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.25s ease; }
+        .modal { background: var(--surface); width: 100%; max-width: 520px; border-radius: 22px 22px 0 0; padding: 22px 20px max(22px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .25s ease; box-shadow: 0 -8px 30px rgba(18, 38, 58, .12); }
         .modal-overlay.open .modal { transform: translateY(0); }
-        .modal h2 { font-size: 1.1rem; margin-bottom: 16px; color: #333; }
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 6px; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
-        .form-group input:focus { border-color: #2196F3; }
+        .modal h2 { font-size: 1.18rem; margin-bottom: 18px; color: var(--text); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: .82rem; color: #475467; font-weight: 650; margin-bottom: 7px; }
+        .form-group input { width: 100%; padding: 12px 13px; border: 1px solid #d0d5dd; border-radius: 10px; background: #fff; font-size: 1rem; color: var(--text); outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+        .form-group input:focus { border-color: #4a9bd5; box-shadow: 0 0 0 3px rgba(37, 136, 206, .13); }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background-color: #e0e0e0; color: #333; }
-        .btn-primary { background-color: #2196F3; color: white; }
-        .clear-all-btn { width: 100%; padding: 10px; background-color: #ffebee; color: #c62828; border: 1px dashed #ef9a9a; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 16px; }
+        .btn { padding: 11px 17px; border-radius: 10px; border: 0; font-size: .9rem; font-weight: 700; cursor: pointer; }
+        .btn-secondary { background: #edf0f4; color: #344054; }
+        .btn-primary { background: var(--blue); color: white; }
+        .clear-all-btn { width: 100%; padding: 11px; background: #fff4f2; color: var(--danger); border: 1px solid #f3c9c4; border-radius: 10px; font-size: .86rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; }
+        button:focus-visible, [role="button"]:focus-visible { outline: 3px solid rgba(37, 136, 206, .35); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
     </style>
 </head>
 <body>
-    <header><h1>Lista de Compras</h1></header>
+    <header>
+        <div class="header-eyebrow">Organize suas compras</div>
+        <h1>Lista de Compras</h1>
+        <p class="header-subtitle">Tudo o que você precisa, em um só lugar.</p>
+    </header>
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('to-buy')">Para Comprar <span class="badge" id="count-to-buy">0</span></button>
         <button class="tab-btn" onclick="switchTab('bought')">Já Comprados <span class="badge" id="count-bought">0</span></button>
     </div>
     <main>
         <div id="tab-to-buy" class="tab-content active">
-            <div id="empty-to-buy" class="empty-state">Sua lista está vazia!<br>Clique no botão abaixo para adicionar.</div>
+            <div class="list-heading">
+                <h2>Lista de produtos</h2>
+                <span class="list-hint">☰ Arraste para ordenar</span>
+            </div>
+            <div id="empty-to-buy" class="empty-state"><span class="empty-icon">🛒</span>Sua lista está vazia.<br>Toque no botão + para adicionar produtos.</div>
             <ul id="list-to-buy" class="item-list"></ul>
         </div>
         <div id="tab-bought" class="tab-content">
-            <button id="clear-bought-btn" class="clear-all-btn" style="display: none;" onclick="clearBoughtItems()">Limpar Itens Comprados</button>
-            <div id="empty-bought" class="empty-state">Nenhum item comprado ainda.</div>
+            <button id="clear-bought-btn" class="clear-all-btn" style="display: none;" onclick="clearBoughtItems()">Limpar itens comprados</button>
+            <div class="list-heading"><h2>Produtos comprados</h2></div>
+            <div id="empty-bought" class="empty-state"><span class="empty-icon">✅</span>Nenhum item comprado ainda.</div>
             <ul id="list-bought" class="item-list"></ul>
         </div>
     </main>
@@ -78,8 +113,8 @@
             <h2 id="modal-title">Adicionar Produto</h2>
             <form id="add-form" onsubmit="handleAddItem(event)">
                 <div class="form-group">
-                    <label for="item-name">Nome do Produto</label>
-                    <input type="text" id="item-name" placeholder="Ex: Leite, Pão, Arroz..." required autocomplete="off">
+                    <label for="item-name">Nome do produto</label>
+                    <input type="text" id="item-name" placeholder="Ex.: Leite, pão, arroz..." required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="item-desired-quantity">Quantidade desejada</label>
@@ -87,7 +122,7 @@
                 </div>
                 <div class="form-group">
                     <label for="item-qty">Observação (opcional)</label>
-                    <input type="text" id="item-qty" placeholder="Ex: 1 kg, marca X...">
+                    <input type="text" id="item-qty" placeholder="Ex.: 1 kg, marca preferida...">
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -127,7 +162,6 @@
             document.getElementById('submit-item-btn').textContent = item ? 'Salvar alterações' : 'Adicionar';
             nameInput.value = item ? item.name : '';
             quantityInput.value = item ? (Number(item.desiredQuantity) || 1) : 1;
-            // Mantém compatibilidade com os itens já salvos, cujo campo quantity era usado como observação.
             notesInput.value = item ? (item.notes !== undefined ? item.notes : (item.quantity || '')) : '';
             document.getElementById('modal-overlay').classList.add('open');
             nameInput.focus();
@@ -185,21 +219,15 @@
         function render() {
             const listToBuy = document.getElementById('list-to-buy');
             const listBought = document.getElementById('list-bought');
-            const emptyToBuy = document.getElementById('empty-to-buy');
-            const emptyBought = document.getElementById('empty-bought');
-            const countToBuy = document.getElementById('count-to-buy');
-            const countBought = document.getElementById('count-bought');
-            const clearBtn = document.getElementById('clear-bought-btn');
-
-            listToBuy.innerHTML = '';
-            listBought.innerHTML = '';
             const toBuyItems = items.filter(item => !item.bought);
             const boughtItems = items.filter(item => item.bought);
-            countToBuy.textContent = toBuyItems.length;
-            countBought.textContent = boughtItems.length;
-            emptyToBuy.style.display = toBuyItems.length === 0 ? 'block' : 'none';
-            emptyBought.style.display = boughtItems.length === 0 ? 'block' : 'none';
-            clearBtn.style.display = boughtItems.length > 0 ? 'block' : 'none';
+            document.getElementById('count-to-buy').textContent = toBuyItems.length;
+            document.getElementById('count-bought').textContent = boughtItems.length;
+            document.getElementById('empty-to-buy').style.display = toBuyItems.length === 0 ? 'block' : 'none';
+            document.getElementById('empty-bought').style.display = boughtItems.length === 0 ? 'block' : 'none';
+            document.getElementById('clear-bought-btn').style.display = boughtItems.length > 0 ? 'block' : 'none';
+            listToBuy.innerHTML = '';
+            listBought.innerHTML = '';
             toBuyItems.forEach(item => listToBuy.appendChild(createItemElement(item)));
             boughtItems.forEach(item => listBought.appendChild(createItemElement(item)));
         }
@@ -216,8 +244,7 @@
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
                         <span class="item-name">${escapeHtml(item.name)}</span>
-                        <span class="item-qty">Quantidade: ${desiredQuantity}</span>
-                        ${notes ? `<span class="item-notes">${escapeHtml(notes)}</span>` : ''}
+                        <span class="item-meta"><span class="item-qty">Qtd.: ${desiredQuantity}</span>${notes ? `<span class="item-notes">${escapeHtml(notes)}</span>` : ''}</span>
                     </div>
                 </div>
                 <div class="item-actions">
@@ -243,7 +270,7 @@
         function startDragging(event, card, item) {
             if (item.bought || (event.button !== undefined && event.button !== 0)) return;
             event.preventDefault();
-            dragState = { id: item.id, card, list: card.parentElement, startX: event.clientX, startY: event.clientY, moved: false };
+            dragState = { card, list: card.parentElement, startX: event.clientX, startY: event.clientY, moved: false };
         }
 
         document.addEventListener('pointermove', event => {
