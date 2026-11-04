@@ -19,8 +19,10 @@
         .tab-content.active { display: block; }
         .empty-state { text-align: center; color: #888; margin-top: 40px; font-size: 0.95rem; }
         .item-list { list-style: none; }
-        .item-card { background-color: white; border-radius: 10px; padding: 12px 10px 12px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .item-card.dragging { opacity: 0.45; box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+        .item-card { background-color: white; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+        .item-card.dragging { opacity: 0.55; box-shadow: 0 8px 18px rgba(0,0,0,0.22); transform: scale(1.01); }
+        .drag-handle { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(180deg, #eaf4ff 0%, #dfeeff 100%); border: 1px solid #cfe3ff; color: #3c7fe3; font-size: 1rem; font-weight: 700; cursor: grab; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; flex-shrink: 0; }
+        .drag-handle:active { cursor: grabbing; }
         .item-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
         .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #2196F3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; font-size: 0.8rem; transition: all 0.2s; }
         .checkbox.checked { background-color: #4CAF50; border-color: #4CAF50; color: white; }
@@ -29,9 +31,7 @@
         .completed .item-name { text-decoration: line-through; color: #888; }
         .item-qty { font-size: 0.8rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
         .item-actions { display: flex; align-items: center; flex-shrink: 0; }
-        .edit-btn, .delete-btn, .drag-handle { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
-        .drag-handle { color: #777; cursor: grab; touch-action: none; user-select: none; }
-        .drag-handle:active { cursor: grabbing; background-color: #eee; }
+        .edit-btn, .delete-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
         .edit-btn { color: #1976d2; }
         .delete-btn { color: #f44336; }
         .edit-btn:active { background-color: #e3f2fd; }
@@ -196,7 +196,7 @@
             li.className = `item-card ${item.bought ? 'completed' : ''}`;
             li.dataset.itemId = item.id;
             li.innerHTML = `
-                ${item.bought ? '' : `<button class="drag-handle" type="button" aria-label="Arrastar ${escapeHtml(item.name)} para organizar" title="Arraste para organizar">☰</button>`}
+                ${item.bought ? '' : '<button class="drag-handle" type="button" aria-label="Arrastar para organizar" title="Arraste para organizar">☰</button>'}
                 <div class="item-info" role="button" tabindex="0" aria-label="Marcar ${escapeHtml(item.name)} como ${item.bought ? 'não comprado' : 'comprado'}">
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
