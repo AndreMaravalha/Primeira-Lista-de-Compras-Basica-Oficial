@@ -19,7 +19,8 @@
         .tab-content.active { display: block; }
         .empty-state { text-align: center; color: #888; margin-top: 40px; font-size: 0.95rem; }
         .item-list { list-style: none; }
-        .item-card { background-color: white; border-radius: 10px; padding: 12px 10px 12px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .item-card { background-color: white; border-radius: 10px; padding: 12px 10px 12px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .item-card.dragging { opacity: 0.45; box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
         .item-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
         .checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #2196F3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; font-size: 0.8rem; transition: all 0.2s; }
         .checkbox.checked { background-color: #4CAF50; border-color: #4CAF50; color: white; }
@@ -28,7 +29,9 @@
         .completed .item-name { text-decoration: line-through; color: #888; }
         .item-qty { font-size: 0.8rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
         .item-actions { display: flex; align-items: center; flex-shrink: 0; }
-        .edit-btn, .delete-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
+        .edit-btn, .delete-btn, .drag-handle { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
+        .drag-handle { color: #777; cursor: grab; touch-action: none; user-select: none; }
+        .drag-handle:active { cursor: grabbing; background-color: #eee; }
         .edit-btn { color: #1976d2; }
         .delete-btn { color: #f44336; }
         .edit-btn:active { background-color: #e3f2fd; }
@@ -91,6 +94,7 @@
     <script>
         let items = JSON.parse(localStorage.getItem('shopping_list_items')) || [];
         let editingItemId = null;
+        let dragState = null;
 
         function saveItems() {
             localStorage.setItem('shopping_list_items', JSON.stringify(items));
@@ -190,7 +194,9 @@
         function createItemElement(item) {
             const li = document.createElement('li');
             li.className = `item-card ${item.bought ? 'completed' : ''}`;
+            li.dataset.itemId = item.id;
             li.innerHTML = `
+                <button class="drag-handle" type="button" aria-label="Arrastar ${escapeHtml(item.name)} para organizar" title="Arraste para organizar">☰</button>
                 <div class="item-info" role="button" tabindex="0" aria-label="Marcar ${escapeHtml(item.name)} como ${item.bought ? 'não comprado' : 'comprado'}">
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
@@ -204,6 +210,8 @@
                 </div>
             `;
 
+            const dragHandle = li.querySelector('.drag-handle');
+            dragHandle.addEventListener('pointerdown', event => startDragging(event, li, item));
             li.querySelector('.item-info').addEventListener('click', () => toggleItemStatus(item.id));
             li.querySelector('.item-info').addEventListener('keydown', event => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -214,6 +222,56 @@
             li.querySelector('.edit-btn').addEventListener('click', () => openModal(item));
             li.querySelector('.delete-btn').addEventListener('click', () => deleteItem(item.id));
             return li;
+        }
+
+        function startDragging(event, card, item) {
+            if (event.button !== undefined && event.button !== 0) return;
+            event.preventDefault();
+            dragState = {
+                id: item.id,
+                bought: item.bought,
+                card,
+                list: card.parentElement,
+                startX: event.clientX,
+                startY: event.clientY,
+                moved: false
+            };
+        }
+
+        document.addEventListener('pointermove', event => {
+            if (!dragState) return;
+            const distance = Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY);
+            if (!dragState.moved && distance < 5) return;
+
+            dragState.moved = true;
+            dragState.card.classList.add('dragging');
+            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const targetCard = element && element.closest('.item-card');
+            if (!targetCard || targetCard === dragState.card || targetCard.parentElement !== dragState.list) return;
+
+            const bounds = targetCard.getBoundingClientRect();
+            const insertBefore = event.clientY < bounds.top + bounds.height / 2;
+            dragState.list.insertBefore(dragState.card, insertBefore ? targetCard : targetCard.nextElementSibling);
+        });
+
+        document.addEventListener('pointerup', finishDragging);
+        document.addEventListener('pointercancel', finishDragging);
+
+        function finishDragging() {
+            if (!dragState) return;
+            const state = dragState;
+            dragState = null;
+            state.card.classList.remove('dragging');
+            if (!state.moved) return;
+
+            const orderedIds = Array.from(state.list.children).map(card => Number(card.dataset.itemId));
+            let orderedItems = items.filter(item => item.bought === state.bought);
+            const itemById = new Map(orderedItems.map(item => [item.id, item]));
+            orderedItems = orderedIds.map(id => itemById.get(id)).filter(Boolean);
+
+            let index = 0;
+            items = items.map(item => item.bought === state.bought ? orderedItems[index++] : item);
+            saveItems();
         }
 
         function escapeHtml(text) {
