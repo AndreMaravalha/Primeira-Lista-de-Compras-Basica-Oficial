@@ -30,6 +30,7 @@
         .item-name { font-size: 1rem; font-weight: 500; color: #222; overflow-wrap: anywhere; }
         .completed .item-name { text-decoration: line-through; color: #888; }
         .item-qty { font-size: 0.8rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
+        .item-notes { font-size: 0.78rem; color: #777; margin-top: 2px; overflow-wrap: anywhere; }
         .item-actions { display: flex; align-items: center; flex-shrink: 0; }
         .edit-btn, .delete-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; }
         .edit-btn { color: #1976d2; }
@@ -81,8 +82,12 @@
                     <input type="text" id="item-name" placeholder="Ex: Leite, Pão, Arroz..." required autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label for="item-qty">Quantidade / Obs.</label>
-                    <input type="text" id="item-qty" placeholder="Ex: 2 un, 1 kg, marca X...">
+                    <label for="item-desired-quantity">Quantidade desejada</label>
+                    <input type="number" id="item-desired-quantity" min="1" step="1" value="1" required inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label for="item-qty">Observação (opcional)</label>
+                    <input type="text" id="item-qty" placeholder="Ex: 1 kg, marca X...">
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -115,12 +120,15 @@
 
         function openModal(item = null) {
             const nameInput = document.getElementById('item-name');
-            const qtyInput = document.getElementById('item-qty');
+            const quantityInput = document.getElementById('item-desired-quantity');
+            const notesInput = document.getElementById('item-qty');
             editingItemId = item ? item.id : null;
             document.getElementById('modal-title').textContent = item ? 'Editar Produto' : 'Adicionar Produto';
             document.getElementById('submit-item-btn').textContent = item ? 'Salvar alterações' : 'Adicionar';
             nameInput.value = item ? item.name : '';
-            qtyInput.value = item ? item.quantity : '';
+            quantityInput.value = item ? (Number(item.desiredQuantity) || 1) : 1;
+            // Mantém compatibilidade com os itens já salvos, cujo campo quantity era usado como observação.
+            notesInput.value = item ? (item.notes !== undefined ? item.notes : (item.quantity || '')) : '';
             document.getElementById('modal-overlay').classList.add('open');
             nameInput.focus();
         }
@@ -128,6 +136,7 @@
         function closeModal() {
             document.getElementById('modal-overlay').classList.remove('open');
             document.getElementById('add-form').reset();
+            document.getElementById('item-desired-quantity').value = 1;
             document.getElementById('modal-title').textContent = 'Adicionar Produto';
             document.getElementById('submit-item-btn').textContent = 'Adicionar';
             editingItemId = null;
@@ -140,13 +149,17 @@
         function handleAddItem(event) {
             event.preventDefault();
             const name = document.getElementById('item-name').value.trim();
-            const quantity = document.getElementById('item-qty').value.trim() || '1 un';
+            const desiredQuantity = Math.max(1, Math.floor(Number(document.getElementById('item-desired-quantity').value) || 1));
+            const notes = document.getElementById('item-qty').value.trim();
             if (!name) return;
 
             if (editingItemId !== null) {
-                items = items.map(item => item.id === editingItemId ? { ...item, name, quantity } : item);
+                items = items.map(item => item.id === editingItemId
+                    ? { ...item, name, desiredQuantity, notes, quantity: notes }
+                    : item
+                );
             } else {
-                items.push({ id: Date.now(), name, quantity, bought: false });
+                items.push({ id: Date.now(), name, desiredQuantity, notes, quantity: notes, bought: false });
             }
             saveItems();
             closeModal();
@@ -195,13 +208,16 @@
             const li = document.createElement('li');
             li.className = `item-card ${item.bought ? 'completed' : ''}`;
             li.dataset.itemId = item.id;
+            const desiredQuantity = Math.max(1, Number(item.desiredQuantity) || 1);
+            const notes = item.notes !== undefined ? item.notes : (item.quantity || '');
             li.innerHTML = `
                 ${item.bought ? '' : '<button class="drag-handle" type="button" aria-label="Arrastar para organizar" title="Arraste para organizar">☰</button>'}
                 <div class="item-info" role="button" tabindex="0" aria-label="Marcar ${escapeHtml(item.name)} como ${item.bought ? 'não comprado' : 'comprado'}">
                     <div class="checkbox ${item.bought ? 'checked' : ''}">${item.bought ? '✓' : ''}</div>
                     <div class="item-details">
                         <span class="item-name">${escapeHtml(item.name)}</span>
-                        <span class="item-qty">${escapeHtml(item.quantity)}</span>
+                        <span class="item-qty">Quantidade: ${desiredQuantity}</span>
+                        ${notes ? `<span class="item-notes">${escapeHtml(notes)}</span>` : ''}
                     </div>
                 </div>
                 <div class="item-actions">
@@ -211,9 +227,7 @@
             `;
 
             const dragHandle = li.querySelector('.drag-handle');
-            if (dragHandle) {
-                dragHandle.addEventListener('pointerdown', event => startDragging(event, li, item));
-            }
+            if (dragHandle) dragHandle.addEventListener('pointerdown', event => startDragging(event, li, item));
             li.querySelector('.item-info').addEventListener('click', () => toggleItemStatus(item.id));
             li.querySelector('.item-info').addEventListener('keydown', event => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -229,27 +243,18 @@
         function startDragging(event, card, item) {
             if (item.bought || (event.button !== undefined && event.button !== 0)) return;
             event.preventDefault();
-            dragState = {
-                id: item.id,
-                card,
-                list: card.parentElement,
-                startX: event.clientX,
-                startY: event.clientY,
-                moved: false
-            };
+            dragState = { id: item.id, card, list: card.parentElement, startX: event.clientX, startY: event.clientY, moved: false };
         }
 
         document.addEventListener('pointermove', event => {
             if (!dragState) return;
             const distance = Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY);
             if (!dragState.moved && distance < 5) return;
-
             dragState.moved = true;
             dragState.card.classList.add('dragging');
             const element = document.elementFromPoint(event.clientX, event.clientY);
             const targetCard = element && element.closest('.item-card');
             if (!targetCard || targetCard === dragState.card || targetCard.parentElement !== dragState.list) return;
-
             const bounds = targetCard.getBoundingClientRect();
             const insertBefore = event.clientY < bounds.top + bounds.height / 2;
             dragState.list.insertBefore(dragState.card, insertBefore ? targetCard : targetCard.nextElementSibling);
@@ -264,7 +269,6 @@
             dragState = null;
             state.card.classList.remove('dragging');
             if (!state.moved) return;
-
             const orderedIds = Array.from(state.list.children).map(card => Number(card.dataset.itemId));
             const toBuyItems = items.filter(item => !item.bought);
             const itemById = new Map(toBuyItems.map(item => [item.id, item]));
